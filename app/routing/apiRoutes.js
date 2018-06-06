@@ -28,32 +28,39 @@ module.exports = function (app) {
     // Note the code here. Our "server" will respond to users with their best match
     // req.body is available since we're using the body-parser middleware
     app.post("/api/friends", function(req, res) {
-        var userData = req.body;
-        var userScore = userData.scores;
+        
         var bestMatch = {
             name: "",
             photo: "",
-            difference: 50
+            difference: Infinity
         }
         
+        var userData = req.body;
+        var userScore = userData.scores;
+        var totalDifference;
         
         for (var i = 0; i < friendsData.length; i++) {
-            var totalDifference = 0;
+            var possibleFriend = friendsData[i];
+            totalDifference = 0
 
-            for (var j = 0; j < userScore.length; j++) {
-                totalDifference += Math.abs(parseInt(userScore[i]) - parseInt(friendsData[i].scores[j]));
+            console.log(possibleFriend.name);
 
+            for (var j = 0; j < possibleFriend.scores.length; j++) {
+                var possibleFriendScore = possibleFriend.scores[j]
+                var currentUserScore = userScore[j]
+
+                totalDifference += Math.abs(parseInt(currentUserScore) - parseInt(possibleFriendScore));
+
+            }
                 if (totalDifference <= bestMatch.difference) {
-                    bestMatch.name = friends[i].name;
-                    bestMatch.photo = friends[i].photo;
+                    bestMatch.name = possibleFriend.name;
+                    bestMatch.photo = possibleFriend.photo;
                     bestMatch.difference = totalDifference;
-                }
             }
         }
 
-        friends.push(userData);
+        friendsData.push(userData);
 
         res.json(bestMatch);
     });
-
 }

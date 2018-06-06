@@ -9,8 +9,13 @@
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.jquery.min.js"></script>
+
 </head>
 
 <body>
@@ -52,12 +57,12 @@
 
                             <div class="form-group">
                                 <label for="reserve-name"> Name (Required) </label>
-                                <input type="text" class="form-control" id="name" name="">
+                                <input type="text" class="form-control" id="name" required>
                             </div>
 
                             <div class="form-group">
                                 <label for="survey-image"> Link to Photo Image (Required) </label>
-                                <input type="text" class="form-control" id="photo" name="">
+                                <input type="text" class="form-control" id="photo" required>
                             </div>
 
                             <h5> Question 1 </h5>
@@ -183,7 +188,7 @@
                             <br>
 
                             <div class="text-center">
-                                <button type="submit" class="btn btn-lg btn-primary submit">
+                                <button type="submit" class="btn btn-lg btn-primary submit" id="submit">
                                     <span class="glyphicon glyphicon-ok"></span> Submit Your Results </button>
                             </div>
 
@@ -198,31 +203,6 @@
         </div>
         <!-- Survey End -->
 
-
-
-        <!-- Modal Bootstrap for Best Friend Display Message -->
-        <div class="results-modal" class="modal fade" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">>&times;</button>
-                        <h2 class="modal-title">
-                            <strong> Your Best Match: </strong>
-                        </h2>
-                    </div>
-                    <div class="modal-body">
-                        <h3 id="matchName"></h3>
-                        <img id="matchImage" src="http://via.placeholder.com/150x150" alt="Picture of Match">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal"> Close </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- End of Modal Bootstrap for Best Friend Display Message -->
-
         <!-- Start Footer -->
         <footer class="footer">
             <div class="container">
@@ -235,13 +215,37 @@
         <!-- End Footer -->
     </div>
     <!-- End Container -->
-</body>
 
-<script type="text/javascript">
+    <!-- Modal Bootstrap for Best Friend Display Message -->
+    <div class="results-modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="close" data-dismiss="modal">&times;</button>
+                    <h2 class="modal-title">
+                        <strong> Your Best Match: </strong>
+                    </h2>
+                </div>
+                <div class="modal-body">
+                    <h3 id="matchName"></h3>
+                    <img id="matchImage" src="http://via.placeholder.com/150x150" alt="Picture of Match">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal"> Close </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End of Modal Bootstrap for Best Friend Display Message -->
 
-    $("#submit").on("click", function (event) {
-        event.preventDefault();
-    
+
+    <script type="text/javascript">
+
+        // Capture form inputs
+        $("#submit").on("click", function (event) {
+            event.preventDefault();
+
+            // Form Validation
             function validateForm() {
                 var isValid = true;
                 $(".form-control").each(function () {
@@ -256,41 +260,47 @@
                         isValid = false;
                     }
                 });
+                return isValid;
             }
 
-            if (validateForm() === true) {
+            // If all required fields are filled
+            if (validateForm()) {
+                // Create an object for the user's data
                 var userData = {
                     name: $("#name").val(),
                     photo: $("#photo").val(),
                     scores: [
-                        $("question1").val(),
-                        $("question2").val(),
-                        $("question3").val(),
-                        $("question4").val(),
-                        $("question5").val(),
-                        $("question6").val(),
-                        $("question7").val(),
-                        $("question8").val(),
-                        $("question9").val(),
-                        $("question10").val(),
+                        $("#question1").val(),
+                        $("#question2").val(),
+                        $("#question3").val(),
+                        $("#question4").val(),
+                        $("#question5").val(),
+                        $("#question6").val(),
+                        $("#question7").val(),
+                        $("#question8").val(),
+                        $("#question9").val(),
+                        $("#question10").val(),
                     ]
                 };
 
-                var currentURL = window.location.origin;
+                // AJAX Post the data to the friends API
+                $.post("/api/friends", userData, function (data) {
 
-                $.post(currentURL + "/api/friends"), userData, function (data) {
-                    $("#matchName").text(data.name);
+                    // Grab the result from AJAX post so that the match's name and photo are displayed
+                    $("#matchName").text(data.name)
                     $("#matchImage").attr("src", data.photo);
+                    // Show the modal with the best match
+                    $("results-modal").modal("toggle");
+                });
 
-                    $("#results-modal").modal("toggle");
-
-                }
             } else {
-                alert("Please make sure all questions are answered!");
+                alert("Please fill out all fields before submitting!")
             }
 
         });
 
-</script>
+    </script>
+
+</body>
 
 </html>
